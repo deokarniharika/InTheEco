@@ -1,10 +1,10 @@
 import discord
 import os
 import requests
+from keep_alive import keep_alive
 import praw
 
-from bs4 import BeautifulSoup
-from keep_alive import keep_alive
+client = discord.Client()
 
 with open('id.txt', 'r') as f:
     CLIENT_ID = f.read()
@@ -19,20 +19,47 @@ reddit = praw.Reddit(client_id=CLIENT_ID,
 
 #scraping data from the envrionment subreddit and getting the top 10 posts as the output.
 
-evs_posts = reddit.subreddit('environment').top(limit=20)
+evs_posts1 = reddit.subreddit('environment').top(limit=20)
+evs_posts2 = reddit.subreddit('environment').new(limit=20)
+evs_posts3 = reddit.subreddit('environment').rising(limit=20)
 
-for post in evs_posts:
-    sky = post.title
+#for loop used here as the evs_posts1, the ListingGenerator object has no attribute 'title'
 
-client = discord.Client()
+for post in evs_posts1:
+    t1 = post.title
+    u1 = post.url
+
+for post in evs_posts2:
+    t2 = post.title
+    u2 = post.url
+
+for post in evs_posts3:
+    t3 = post.title
+    u3 = post.url
 
 
-def recent_score():
-    s2 = sky
-    embed = discord.Embed(title="Top Environmental News: ",
-                          description=s2,
-                          color=0x71BC68)
-    return embed
+def top_news():
+    embed1 = discord.Embed(title="Environmental News:",
+                           description=t1,
+                           url=u1,
+                           color=0x71BC68)
+    return (embed1.set_footer(text="Category: Top"))
+
+
+def new_news():
+    embed1 = discord.Embed(title="Environmental News:",
+                           description=t2,
+                           url=u2,
+                           color=0xacd1af)
+    return (embed1.set_footer(text="Category: New"))
+
+
+def hot_news():
+    embed1 = discord.Embed(title="Environmental News:",
+                           description=t3,
+                           url=u3,
+                           color=0x00783e)
+    return (embed1.set_footer(text="Category: Rising"))
 
 
 @client.event
@@ -45,8 +72,16 @@ async def on_message(message):
     if message.author == client.user:
         return
 
-    if message.content.startswith('!top'):
-        embed = recent_score()
+    if message.content.startswith('-top'):
+        embed = top_news()
+        await message.channel.send(embed=embed)
+
+    if message.content.startswith('-new'):
+        embed = new_news()
+        await message.channel.send(embed=embed)
+
+    if message.content.startswith('-rising'):
+        embed = hot_news()
         await message.channel.send(embed=embed)
 
 
